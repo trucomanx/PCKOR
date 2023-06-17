@@ -4,7 +4,7 @@ import sys,os
 import extras
 import numpy as np
 
-output_dir='output_kpckor';
+output_dir='output_mpckor';
 M=100;
 Nparts=40;
 sigma=np.linspace(0.3,1.5,Nparts);
@@ -20,9 +20,9 @@ print('dataset test  shape:',X_test.shape,y_test.shape)
 
 ################################################################################
 ################################################################################
-# Applying KpcKor
+# Applying MpcKor
 sys.path.append('../src');
-import PcKor.KpcKor as KpcKor
+import PcKor.MpcKor as MpcKor
 from sklearn.metrics import mean_squared_error, r2_score
 
 
@@ -33,7 +33,7 @@ r2_valid=np.zeros((Nparts,));
 
 
 for idx in range(Nparts):
-    reg = KpcKor(kernel='rbf',gamma=0.5/(sigma[idx]*sigma[idx]));
+    reg = MpcKor(kernel='rbf',M=M,gamma=0.5/(sigma[idx]*sigma[idx]));
     reg.fit(X_train, y_train)
     
     y=reg.predict(X_train);
@@ -51,7 +51,7 @@ idx_min = np.argmin(mse_valid);
 ################################################################################
 ################################################################################
 ## Analysis with the testing dataset
-reg = KpcKor(kernel='rbf',gamma=0.5/(sigma[idx_min]*sigma[idx_min]));
+reg = MpcKor(kernel='rbf',gamma=0.5/(sigma[idx_min]*sigma[idx_min]));
 reg.fit(X_train, y_train)
 y=reg.predict(X_test);
 

@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-
+import os, contextlib
 import numpy as np
 
 def load_dataset(input_file):
@@ -16,12 +16,13 @@ def load_dataset(input_file):
     
     return X_train,y_train,X_valid,y_valid,X_test,y_test;
 
+
 def save_stats_in_txt(mydict,out_file):
     with open(out_file, 'w') as f:
         for x, y in mydict.items():
             f.write(x+'='+str(y)+'\n');
             print(x, y) 
- 
+
 def save_history_in_csv(mydict,out_file,sep=','):
     with open(out_file, 'w') as f:
         Key=list(mydict.keys());
@@ -61,10 +62,13 @@ def plot_mse_results(sigma,mse_train,mse_valid,out_file):
     plt.legend(loc='lower right');
     plt.xlabel('$\sigma$');
     plt.ylabel('MSE');
-    #plt.show();
     
     #fig.set_rasterized(True);
-    plt.savefig(out_file,bbox_inches='tight');
+    
+    ## The PostScript backend does not support transparency; partially transparent artists will be rendered opaque.
+    with open(os.devnull, 'w') as devnull:
+        with contextlib.redirect_stderr(devnull):
+            plt.savefig(out_file,bbox_inches='tight');
 
 from mpl_toolkits import mplot3d
 from matplotlib import cm
@@ -78,7 +82,37 @@ def plot_3d_points(X,out_file,s_size=1):
     ax.set_ylabel('$x_2$');
     ax.set_zlabel('$x_3$');
 
-    #ax.set_rasterized(True)
     plt.autoscale(tight=True)
-    plt.savefig(out_file,bbox_inches='tight');
+    
+    #ax.set_rasterized(True)
+    
+    ## The PostScript backend does not support transparency; partially transparent artists will be rendered opaque.
+    with open(os.devnull, 'w') as devnull:
+        with contextlib.redirect_stderr(devnull):
+            plt.savefig(out_file,bbox_inches='tight');
+ 
 
+
+def plot_cne(CNE,out_file,M=None,xlabel='n',ylabel='CNE',cne_label='CNE',title=''):
+    Nparts=np.size(CNE);
+    
+    count=np.linspace(1,Nparts,Nparts);
+    
+    fig = plt.figure();
+    plt.plot( count,   CNE, label=cne_label ,color='black',linestyle='solid');
+    if M!=None:
+        line_x=M*np.ones((Nparts,));
+        line_y=np.linspace(np.min(CNE),1,Nparts);
+        line_label='m: %d'%(M);
+        plt.plot(line_x,line_y, label=line_label,color='black',linestyle='dotted');
+    plt.legend(loc='lower right');
+    plt.xlabel(xlabel);
+    plt.ylabel(ylabel);
+    plt.title(title);
+    
+    #fig.set_rasterized(True);
+    
+    ## The PostScript backend does not support transparency; partially transparent artists will be rendered opaque.
+    with open(os.devnull, 'w') as devnull:
+        with contextlib.redirect_stderr(devnull):
+            plt.savefig(out_file,bbox_inches='tight');

@@ -11,8 +11,8 @@ from sklearn.base import BaseEstimator, RegressorMixin
 from sklearn.metrics.pairwise import pairwise_kernels
 
 
-class KpcKor(BaseEstimator, RegressorMixin):
-    """Kernelized orthogonal regression with K principal components.
+class MpcKor(BaseEstimator, RegressorMixin):
+    """Kernelized orthogonal regression with M principal components.
     
     Valid values for metric are:
         See https://scikit-learn.org/stable/modules/metrics.html
@@ -20,15 +20,15 @@ class KpcKor(BaseEstimator, RegressorMixin):
     Regression parameters
     ---------------------
     
-    ln_drop : int default=None
-        If None the model use the hyperplane perpendicular to the eigenvector less significative,
-        the last eigenvalue.
-        In other case uses the eigenvector in the position `ln_drop`,
+    M : int default=None
+        Indicates the quantity of eigenvalues (principal components) used.
+        If None, the model uses M equal to the half part of samples.
+        In other case uses the eigenvectors until the position `M`,
         when them are sorted from most to least significant.
-        Being the position `ln_drop=0` the eigenvector with the eigenvalue most significant.
-        ln_drop=ln_drop % (number of samples);
+        Being the position `m=0` the eigenvector with the eigenvalue most significant.
+        M=M % (number of samples);
         To see the list of sorted eigenvalues, got to _eigenvectors_ .
-        ln_drop take in count sort_abs.
+        M take in count sort_abs.
     
     sort_abs : bool default=True
         If true, sort the eigenvalues applying the absolute value.
@@ -82,7 +82,7 @@ class KpcKor(BaseEstimator, RegressorMixin):
 
     See Also
     --------
-    PcKor.MpcKor : Kernelized orthogonal regression with M components.
+    PcKor.KpcKor : Kernelized orthogonal regression with K components.
 
     References
     ----------
@@ -97,13 +97,13 @@ class KpcKor(BaseEstimator, RegressorMixin):
     >>> X = rng.randn(n_samples, n_features)
     >>> y = rng.randn(n_samples)
     >>>
-    >>> import PcKor.KpcKor as KpcKor
-    >>> kkor = KpcKor(kernel='rbf', gamma=0.5)
+    >>> import PcKor.MpcKor as MpcKor
+    >>> kkor = MpcKor(kernel='rbf', gamma=0.5)
     >>> kkor.fit(X, y)
     """
-    def __init__(self, ln_drop=None, sort_abs=True, kernel='rbf', gamma=0.5, degree=3, coef0=1, kernel_params=None):
+    def __init__(self, M=None, sort_abs=True, kernel='rbf', gamma=0.5, degree=3, coef0=1, kernel_params=None):
         # Regression parameters
-        self.ln_drop=ln_drop;
+        self.M=M;
         self.sort_abs=sort_abs;
         
         # Kernel parameters
@@ -136,12 +136,12 @@ class KpcKor(BaseEstimator, RegressorMixin):
         
         L=X.shape[0];
         N=X.shape[1];
-        if self.ln_drop==None:
-            nhat=L-1;
-        elif isinstance(self.ln_drop, int) and self.ln_drop>=0:
-            nhat=self.ln_drop%L;
+        if self.M==None:
+            nhat=int(L/2);
+        elif isinstance(self.M, int) and self.M>0:
+            nhat=self.M%L;
         else:
-            sys.exit('ln_drop should be a positive integer or None.');
+            sys.exit('M should be a positive integer or None.');
         
         ## Setting variables
         IminusB=np.eye(L) - np.ones((L,L))*(1.0/L);
@@ -166,14 +166,17 @@ class KpcKor(BaseEstimator, RegressorMixin):
         self._eigenvalues_  = self._eigenvalues_[idx];
         self._eigenvectors_ = self._eigenvectors_[:,idx];
         
-        ## KpcKor
-        u=self._eigenvectors_[:,nhat].reshape((L,1));
-        Q=IminusB@u;
+        ## MpcKor
+        U=self._eigenvectors_[:,0:nhat];
+        Ginv=np.linalg.inv(np.diag(self._eigenvalues_[0:nhat]));
         
-        tmp_vec=Q/((Y.T@Q)[0][0]);
+        R=IminusB@U@Ginv@U.T@IminusB;
+        r=b-R@KhatplusYYT@b;
         
-        self.w=-tmp_vec;
-        self.w0=(b.T@KhatplusYYT@tmp_vec)[0][0];
+        tmp_vec=Y/((1-Y.T@R@Y)[0][0]);
+        
+        self.w=R.T@tmp_vec;
+        self.w0=(r.T@tmp_vec)[0][0];
         self.X_fit_ = X;
         
         return self
