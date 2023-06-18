@@ -20,4 +20,4 @@ For more informations use `python setup.py --help-commands`
 
 Install the packaged library
 
-    pip install dist/PcKor-VERSION.tar.gz
+    pip3 install dist/PcKor-VERSION.tar.gz
