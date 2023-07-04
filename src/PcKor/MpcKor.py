@@ -141,7 +141,7 @@ class MpcKor(BaseEstimator, RegressorMixin):
         elif isinstance(self.M, int) and self.M>0:
             nhat=self.M%L;
         else:
-            sys.exit('M should be a positive integer or None.');
+            sys.exit('M should be a positive integer or None.M: '+str(M));
         
         ## Setting variables
         IminusB=np.eye(L) - np.ones((L,L))*(1.0/L);
