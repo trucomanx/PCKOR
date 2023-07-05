@@ -140,7 +140,7 @@ class MpcKor(BaseEstimator, RegressorMixin):
         elif (isinstance(self.M, int) or isinstance(self.M, np.int64) ) and self.M>0:
             if self.M>=L:
                 nhat=L-1;
-            else
+            else:
                 nhat=int(self.M);
         else:
             sys.exit('M should be a positive integer or None. M='+str(self.M)+' of type '+str(type(self.M)));
