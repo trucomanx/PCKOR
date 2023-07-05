@@ -62,7 +62,7 @@ def FuncMpKorKfoldBestGaussian(m_list,gamma_list,X_train, y_train,K=3):
     return kor_opt, m_opt, gamma_opt, score_val_opt, SCORE_AG
 
 
-def FuncMpKorKfoldBestPolynomial(m_list,gamma_list,X_train, y_train,K=3):
+def FuncMpKorKfoldBestPolynomial(m_list,gamma_list,X_train, y_train,K=3,degree=3,coef0=1.0):
     found=False; 
     k=0;
     
@@ -74,7 +74,7 @@ def FuncMpKorKfoldBestPolynomial(m_list,gamma_list,X_train, y_train,K=3):
         score_val=[];
         ng=0;
         for gamma in gamma_list:
-            kor = MpcKor(degree=M,kernel="poly",gamma=gamma,coef0=1.0);
+            kor = MpcKor(M=M,kernel="poly",gamma=gamma,coef0=coef0,degree=degree);
             cv = KFold(n_splits=K, random_state=1, shuffle=True);
             
             scores = cross_val_score(kor, X_train, y_train, scoring='r2', cv=cv, n_jobs=-1)
