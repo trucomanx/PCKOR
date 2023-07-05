@@ -62,7 +62,7 @@ def FuncMpKorKfoldBestGaussian(m_list,gamma_list,X_train, y_train,K=3):
     return kor_opt, m_opt, gamma_opt, score_val_opt, SCORE_AG
 
 
-def FuncMpKorKfoldBestPolyinomial(m_list,gamma_list,X_train, y_train,K=3):
+def FuncMpKorKfoldBestPolynomial(m_list,gamma_list,X_train, y_train,K=3):
     found=False; 
     k=0;
     
