@@ -26,7 +26,6 @@ class MpcKor(BaseEstimator, RegressorMixin):
         In other case uses the eigenvectors until the position `M`,
         when them are sorted from most to least significant.
         Being the position `m=0` the eigenvector with the eigenvalue most significant.
-        M=M % (number of samples);
         To see the list of sorted eigenvalues, got to _eigenvectors_ .
         M take in count sort_abs.
     
@@ -138,8 +137,11 @@ class MpcKor(BaseEstimator, RegressorMixin):
         N=X.shape[1];
         if self.M==None:
             nhat=int(L/2);
-        elif isinstance(self.M, int) and self.M>0:
-            nhat=self.M%L;
+        elif (isinstance(self.M, int) or isinstance(self.M, np.int64) ) and self.M>0:
+            if self.M>=L:
+                nhat=L-1;
+            else
+                nhat=int(self.M);
         else:
             sys.exit('M should be a positive integer or None. M='+str(self.M)+' of type '+str(type(self.M)));
         
