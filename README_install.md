@@ -11,7 +11,7 @@ Download the source code
 
 The next command generates the `dist/PcKor-VERSION.tar.gz` file.
 
-    cd PcKor/src
+    cd src
     python setup.py sdist
 
 For more informations use `python setup.py --help-commands`
