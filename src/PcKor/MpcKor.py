@@ -114,7 +114,7 @@ class MpcKor(BaseEstimator, RegressorMixin):
                     kernel_params=None):
         # Regression parameters
         self.M=M;
-        slef.delta=delta;
+        self.delta=delta;
         self.sort_abs=sort_abs;
         
         # Kernel parameters
