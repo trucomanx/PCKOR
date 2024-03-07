@@ -29,6 +29,9 @@ class MpcKor(BaseEstimator, RegressorMixin):
         To see the list of sorted eigenvalues, got to _eigenvectors_ .
         M take in count sort_abs.
     
+    delta: float default=1.0
+        This factor should be grather than zero.
+    
     sort_abs : bool default=True
         If true, sort the eigenvalues applying the absolute value.
         In other case, sort the eingenvalues considering the sign.
@@ -100,9 +103,18 @@ class MpcKor(BaseEstimator, RegressorMixin):
     >>> kkor = MpcKor(kernel='rbf', gamma=0.5)
     >>> kkor.fit(X, y)
     """
-    def __init__(self, M=None, sort_abs=True, kernel='rbf', gamma=0.5, degree=3, coef0=1, kernel_params=None):
+    def __init__(   self, 
+                    M=None, 
+                    delta=1.0, 
+                    sort_abs=True, 
+                    kernel='rbf', 
+                    gamma=0.5, 
+                    degree=3, 
+                    coef0=1, 
+                    kernel_params=None):
         # Regression parameters
         self.M=M;
+        slef.delta=delta;
         self.sort_abs=sort_abs;
         
         # Kernel parameters
@@ -152,7 +164,7 @@ class MpcKor(BaseEstimator, RegressorMixin):
         Khat = self._get_kernel(X);
         #### Khat = 0.5*(Khat + Khat.T);
         
-        KhatplusYYT=(Y@Y.T)+Khat;
+        KhatplusYYT=(Y@Y.T)+(self.delta*self.delta)*Khat;
         K=IminusB@(KhatplusYYT@IminusB);
         #### K=0.5*(K+K.T);
         
@@ -177,7 +189,7 @@ class MpcKor(BaseEstimator, RegressorMixin):
         
         tmp_vec=Y/((1-Y.T@R@Y)[0][0]);
         
-        self.w=R.T@tmp_vec;
+        self.w=(self.delta*self.delta)*(R.T@tmp_vec);
         self.w0=(r.T@tmp_vec)[0][0];
         self.X_fit_ = X;
         

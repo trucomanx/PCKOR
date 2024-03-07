@@ -30,6 +30,9 @@ class KpcKor(BaseEstimator, RegressorMixin):
         To see the list of sorted eigenvalues, got to _eigenvectors_ .
         ln_drop take in count sort_abs.
     
+    delta: float default=1.0
+        This factor should be grather than zero.
+    
     sort_abs : bool default=True
         If true, sort the eigenvalues applying the absolute value.
         In other case, sort the eingenvalues considering the sign.
@@ -101,10 +104,19 @@ class KpcKor(BaseEstimator, RegressorMixin):
     >>> kkor = KpcKor(kernel='rbf', gamma=0.5)
     >>> kkor.fit(X, y)
     """
-    def __init__(self, ln_drop=None, sort_abs=True, kernel='rbf', gamma=0.5, degree=3, coef0=1, kernel_params=None):
+    def __init__(   self, 
+                    ln_drop=None, 
+                    delta=1.0, 
+                    sort_abs=True, 
+                    kernel='rbf', 
+                    gamma=0.5, 
+                    degree=3, 
+                    coef0=1, 
+                    kernel_params=None):
         # Regression parameters
         self.ln_drop=ln_drop;
         self.sort_abs=sort_abs;
+        self.delta=delta;
         
         # Kernel parameters
         self.kernel = kernel
@@ -150,7 +162,7 @@ class KpcKor(BaseEstimator, RegressorMixin):
         Khat = self._get_kernel(X);
         #### Khat = 0.5*(Khat + Khat.T);
         
-        KhatplusYYT=(Y@Y.T)+Khat;
+        KhatplusYYT=(Y@Y.T)+(self.delta*self.delta)*Khat;
         K=IminusB@(KhatplusYYT@IminusB);
         #### K=0.5*(K+K.T);
         
@@ -170,9 +182,12 @@ class KpcKor(BaseEstimator, RegressorMixin):
         u=self._eigenvectors_[:,nhat].reshape((L,1));
         Q=IminusB@u;
         
-        tmp_vec=Q/((Y.T@Q)[0][0]);
+        if (Y.T@Q)[0][0]==0:
+            tmp_vec=Q/(sys.float_info.epsilon);
+        else:
+            tmp_vec=Q/((Y.T@Q)[0][0]);
         
-        self.w=-tmp_vec;
+        self.w=-(self.delta*self.delta)*tmp_vec;
         self.w0=(b.T@KhatplusYYT@tmp_vec)[0][0];
         self.X_fit_ = X;
         
